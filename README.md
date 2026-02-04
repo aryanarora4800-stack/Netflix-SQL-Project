@@ -1,15 +1,20 @@
-# Netflix-SQL-Project
-This project involves a comprehensive analysis of Netflix's global content library using SQL. As an economics student, I focused on identifying market trends, production longevity across different regions, and catalog health to understand the strategic positioning of the platform.
+# Netflix Content Strategy & Regional Analytics (SQL)
 
-# Objectives
-Market Segmentation: Analyze how Netflix balances its library across different countries.
-Content Lifecycle: Identify the gap between content release and its arrival on the platform.
-Production Trends: Track the growth of Movies vs. TV Shows over the last decade.
-Data Integrity: Perform an audit of the dataset to identify missing metadata that could affect recommendation algorithms.
+## Project Overview
 
-# Dataset
-The data is sourced from Kaggle and contains over 8,000 rows of titles including information on directors, cast, country, release year, and duration.
+This project performs a deep-dive analysis of Netflix's global content library using SQL. As an economist, I approached this dataset with the goal of uncovering the strategic logic behind content distribution, production longevity, and regional market focus. By transforming raw data into actionable business intelligence, this analysis highlights how Netflix balances its library to cater to diverse global audiences.
 
+## Objectives
+
+* **Market Analysis:** Categorize content distribution across key global regions.
+* **Production Trends:** Track the growth of the catalog over the last decade.
+* **Content Lifecycle:** Measure the gap between a title's original release and its arrival on the platform.
+* **Data Quality Audit:** Identify metadata gaps that could impact search algorithms and discoverability.
+* **Executive Snapshot:** Provide high-level KPIs regarding content mix and audience targeting.
+
+## Database Schema
+
+```sql
 DROP TABLE IF EXISTS netflix;
 CREATE TABLE netflix
 (
@@ -27,7 +32,15 @@ CREATE TABLE netflix
     description  VARCHAR(550)
 );
 
--- 1. Identify the Top 5 Countries with the Most "Movie" Content
+```
+
+## Business Problems and Solutions
+
+### 1. Top 5 Countries with the Most "Movie" Content
+
+**Business Insight:** Identifies the primary film-producing hubs for Netflix, helping to understand regional licensing priorities.
+
+```sql
 SELECT 
     country, 
     COUNT(*) as total_movies
@@ -37,7 +50,13 @@ GROUP BY country
 ORDER BY total_movies DESC
 LIMIT 5;
 
---2. Analyze the Content Growth Trend for the Last 10 Years
+```
+
+### 2. Content Growth Trend (Last 10 Years)
+
+**Business Insight:** Tracks the velocity of content acquisition to visualize how the platform has scaled since 2012.
+
+```sql
 SELECT 
     release_year, 
     COUNT(*) as total_content,
@@ -48,14 +67,26 @@ WHERE release_year >= 2012
 GROUP BY release_year
 ORDER BY release_year DESC;
 
---3. Identify Directors Who Have Directed Both Movies and TV Shows
+```
+
+### 3. Directors with Versatile Content (Movies & TV Shows)
+
+**Business Insight:** Highlights versatile creators who contribute across both formats, often indicating high-value talent relationships.
+
+```sql
 SELECT director
 FROM netflix
 WHERE director IS NOT NULL
 GROUP BY director
 HAVING COUNT(DISTINCT type) > 1;
 
---4. Identify Recent Content from a Specific Region (e.g., India)
+```
+
+### 4. Regional Focus: Emerging Market (India)
+
+**Business Insight:** Analyzes the content pipeline in high-growth regions by filtering for new titles (post-2020).
+
+```sql
 SELECT 
     title, 
     type, 
@@ -66,7 +97,13 @@ WHERE country = 'India'
   AND release_year > 2020
 ORDER BY release_year DESC;
 
---5. Find the Top 3 Ratings for Each Country
+```
+
+### 5. Top 3 Ratings for Each Country
+
+**Business Insight:** Uses window functions to identify the dominant target audience (Kids, Teens, Adults) in each market.
+
+```sql
 WITH RatingCounts AS (
     SELECT country, rating, COUNT(*) as count,
            RANK() OVER (PARTITION BY country ORDER BY COUNT(*) DESC) as rnk
@@ -78,7 +115,13 @@ SELECT country, rating, count
 FROM RatingCounts
 WHERE rnk <= 3;
 
---6. Top 10 Most Popular Genres on Netflix
+```
+
+### 6. Top 10 Most Popular Genres
+
+**Business Insight:** Provides a high-level view of the most frequent genres, indicating where content competition is highest.
+
+```sql
 SELECT 
     listed_in AS genre, 
     COUNT(*) AS total_count
@@ -87,7 +130,13 @@ GROUP BY genre
 ORDER BY total_count DESC
 LIMIT 10;
 
---7. Detect "Late Arrivals": Content Added 10+ Years After Release
+```
+
+### 7. "Late Arrivals" (10+ Year Gap)
+
+**Business Insight:** Identifies licensed "legacy" content versus new "originals" by calculating the gap between release year and add date.
+
+```sql
 SELECT 
     title, 
     release_year, 
@@ -98,13 +147,25 @@ WHERE date_added IS NOT NULL
   AND (EXTRACT(YEAR FROM TO_DATE(date_added, 'Month DD, YYYY')) - release_year) > 10
 ORDER BY year_gap DESC;
 
---8. Find Titles Containing Specific Keywords Like "History" or "War"
+```
+
+### 8. Thematic Analysis: History and War
+
+**Business Insight:** Uses keyword search to quantify the volume of content within specific historical or thematic niches.
+
+```sql
 SELECT title, description
 FROM netflix
 WHERE description LIKE '%history%' OR description LIKE '%war%'
    OR title LIKE '%history%' OR title LIKE '%war%';
 
---9. Data Quality Check: Identify Countries with the Most Missing Director Data
+```
+
+### 9. Data Integrity Audit: Missing Director Metadata
+
+**Business Insight:** A data quality check to identify which regions have the most missing "Director" information, impacting search discoverability.
+
+```sql
 SELECT 
     SPLIT_PART(country, ',', 1) AS primary_country, 
     COUNT(*) AS missing_director_count
@@ -115,11 +176,36 @@ GROUP BY primary_country
 ORDER BY missing_director_count DESC
 LIMIT 10;
 
---10. Global Content Executive Snapshot
+```
+
+### 10. Executive Dashboard (Master Query)
+
+**Business Insight:** The ultimate summary query providing a "Content Mix Ratio" (Movies vs. TV Shows) to assess library health.
+
+```sql
 SELECT 
     COUNT(*) AS total_titles,
-    COUNT(DISTINCT rating) AS unique_rating_categories,
+    COUNT(DISTINCT rating) AS unique_ratings,
     SUM(CASE WHEN type = 'Movie' THEN 1 ELSE 0 END) AS movie_count,
     SUM(CASE WHEN type = 'TV Show' THEN 1 ELSE 0 END) AS tv_show_count,
     ROUND(SUM(CASE WHEN type = 'Movie' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS movie_percentage
 FROM netflix;
+
+```
+
+## Key Findings
+
+* **Library Strategy:** The catalog is heavily focused on Movies, though TV Shows are a significant driver of long-term engagement.
+* **Regional Variation:** Emerging markets show a faster turnover of new content, while established markets maintain a larger volume of legacy titles.
+* **Metadata Gaps:** Identifying missing director info revealed regional variances in data quality, which is vital for optimizing recommendation engines.
+
+## Credits
+
+* **Mentor:** Guidance and project inspiration provided by @najirh
+* **Dataset:** Netflix Titles dataset sourced via Kaggle.
+
+---
+
+**Author:** Aryan Arora
+
+*M.A. Economics Student, IIFT New Delhi (2025-27)* *Focusing on the intersection of Economic Theory and Data Analytics.*
