@@ -1,5 +1,5 @@
 # Netflix Content Strategy & Regional Analytics (SQL)
-
+![](https://github.com/najirh/netflix_sql_project/blob/main/logo.png)
 ## Project Overview
 
 This project performs a deep-dive analysis of Netflix's global content library using SQL. As an economist, I approached this dataset with the goal of uncovering the strategic logic behind content distribution, production longevity, and regional market focus. By transforming raw data into actionable business intelligence, this analysis highlights how Netflix balances its library to cater to diverse global audiences.
