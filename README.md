@@ -200,9 +200,8 @@ FROM netflix;
 * **Metadata Gaps:** Identifying missing director info revealed regional variances in data quality, which is vital for optimizing recommendation engines.
 
 ## Credits
-
-* **Mentor:** Guidance and project inspiration provided by @najirh
-* **Dataset:** Netflix Titles dataset sourced via Kaggle.
+- **Project Concept:** Najir H.
+- **Tutorial/Guidance:** https://youtu.be/-7cT0651_lw?si=fMi2xAKiIioUcXrh
 
 ---
 
